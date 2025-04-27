@@ -2,7 +2,7 @@
 #include "Base.h"
 
 BEGIN(Engine)
-class CGraphic_Device final : public CBase
+class ENGINE_DLL CGraphic_Device final : public CBase
 {
 private:
 	CGraphic_Device();

@@ -4,6 +4,8 @@
 
 BEGIN(Engine)
 class CGameInstance;
+class CTimer;
+class CRawInput_Device;
 END
 
 BEGIN(Client)
@@ -16,15 +18,22 @@ private:
 	virtual ~CMainApp() = default;
 
 public:
+	int Run();
+
+public:
 	LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	HRESULT Initialize_MainWindow(HINSTANCE g_hInstance);
 	HRESULT Initialize(HINSTANCE g_hInstance);
 
 public:
-	void Tick();
+	void Update(const float& DeltaTime);
 
 public:
-	HRESULT Render();
+	void Draw(const float& DeltaTime);
+
+public: //----------- For Debug : FPS ---------------
+	void CalculateFrameStats();
+
 
 private:
 	HINSTANCE	m_hAppInst = nullptr;
@@ -43,7 +52,9 @@ private:
 	std::wstring                m_MainWndCaption = L"Two the Tanks";
 
 private:
-	CGameInstance* m_pGameInstance = { nullptr };
+	CGameInstance*		m_pGameInstance = { nullptr };
+	CTimer*				m_pTimer = { nullptr };
+	CRawInput_Device*	m_pInput_Dev{ nullptr };
 
 public:
 	virtual void Free() override;

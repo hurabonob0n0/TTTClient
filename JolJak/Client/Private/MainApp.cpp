@@ -1,6 +1,8 @@
 #include <windowsx.h>
 #include "MainApp.h"
 #include "GameInstance.h"
+#include "Timer.h"
+#include "Raw_Input.h"
 
 IMPLEMENT_SINGLETON(CMainApp)
 
@@ -11,62 +13,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+	//_CrtSetBreakAlloc(158);
+	//_CrtSetBreakAlloc(159);
 
-	MSG msg = { 0 };
-
-	CMainApp* mainApp = CMainApp::Get_Instance();
+	/*CMainApp* mainApp = CMainApp::Get_Instance();
 	if (FAILED(mainApp->Initialize(hInstance)))
 		return FALSE;
 
-	while (msg.message != WM_QUIT)
-	{
-		// 처리해야할 윈도우 메세지들이 있는지 확인합니다.
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		// 처리해야할 메세지가 없는 경우, 에니메이션과 게임을 처리합니다.
-		//else
-		//{
-		//	//mTimer.Tick();
+	mainApp->Run();*/
 
-		//	/*if (!m_AppPaused)
-		//	{*/
-		//		//CalculateFrameStats();
-		//		//Update(mTimer);
-		//	/*}
-		//	else
-		//	{*/
-		//		//Sleep(100);
-		//	/*}*/
-		//}
-		mainApp->Render();
+
+	try
+	{
+		CMainApp* mainApp = CMainApp::Get_Instance();
+		if (FAILED(mainApp->Initialize(hInstance)))
+			return 0;
+
+		return mainApp->Run();
 	}
-
-	Safe_Release(mainApp);
-
-	return (int)msg.wParam;
-
-
-	/*try
-	{
-		CMainApp theApp(hInstance);
-		if (!theApp.Initialize())
-			return 0;*/
-
-
-
-
-
-
-
-	/*}
 	catch (DxException& e)
 	{
-		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
+		//MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
-	}*/
+	}
+
 }
 
 
@@ -79,9 +49,46 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return CMainApp::Get_Instance()->MsgProc(hwnd, msg, wParam, lParam);
 }
 
-CMainApp::CMainApp() : m_pGameInstance(CGameInstance::Get_Instance())
+CMainApp::CMainApp() : m_pGameInstance(CGameInstance::Get_Instance()), m_pTimer(CTimer::Get_Instance()), m_pInput_Dev(CRawInput_Device::Get_Instance())
 {
-	Safe_AddRef(m_pGameInstance);
+}
+
+int CMainApp::Run()
+{
+	MSG msg = { 0 };
+
+	m_pTimer->Reset();
+
+	while (msg.message != WM_QUIT)
+	{
+		// 처리해야할 윈도우 메세지들이 있는지 확인합니다.
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		// 처리해야할 메세지가 없는 경우, 에니메이션과 게임을 처리합니다.
+		else
+		{
+			m_pTimer->Tick();
+
+			if (!m_AppPaused)
+			{
+				const float DT = m_pTimer->DeltaTime();
+				CalculateFrameStats();
+				Update(DT);
+				Draw(DT);
+			}
+			else
+			{
+				Sleep(100);
+			}
+		}
+	}
+
+	RELEASE_INSTANCE(CMainApp);
+
+	return (int)msg.wParam;
 }
 
 LRESULT CMainApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -95,12 +102,12 @@ LRESULT CMainApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (LOWORD(wParam) == WA_INACTIVE)
 		{
 			m_AppPaused = true;
-			//mTimer.Stop();
+			m_pTimer->Stop();
 		}
 		else
 		{
 			m_AppPaused = false;
-			//mTimer.Start();
+			m_pTimer->Start();
 		}
 		return 0;
 
@@ -159,7 +166,7 @@ LRESULT CMainApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ENTERSIZEMOVE:
 		m_AppPaused = true;
 		m_Resizing = true;
-		//mTimer.Stop();
+		m_pTimer->Stop();
 		return 0;
 
 		// 사용자가 크기 조정을 끝마쳤을 때 WM_EXITSIZEMOVE가 보내집니다.
@@ -167,7 +174,7 @@ LRESULT CMainApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_EXITSIZEMOVE:
 		m_AppPaused = false;
 		m_Resizing = false;
-		//m_Timer.Start();
+		m_pTimer->Start();
 		//OnResize();
 		return 0;
 
@@ -203,6 +210,10 @@ LRESULT CMainApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_MOUSEMOVE:
 			OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			return 0;*/
+
+	case WM_INPUT:
+		m_pInput_Dev->Update_InputDev(lParam);
+		break;
 
 	case WM_KEYUP:
 		if (wParam == VK_ESCAPE)
@@ -265,26 +276,56 @@ HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 {
 	Initialize_MainWindow(g_hInstance);
 
+	m_pInput_Dev->Initialize(m_hMainWnd);
+
 	if (FAILED(m_pGameInstance->Initialize_Engine(m_hMainWnd)))
 		return E_FAIL;
-	
+
 	m_pGameInstance->OnResize();
 
-
-	
 	return S_OK;
 }
 
-void CMainApp::Tick()
+void CMainApp::CalculateFrameStats()
+{
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	++frameCnt;
+
+	// 1초 동안의 평균을 계산합니다.
+	if ((m_pTimer->TotalTime() - timeElapsed >= 1.0f))
+	{
+		float fps = (float)frameCnt; // fps = frameCnt / 1;
+		float mspf = 1000.0f / fps;
+
+		wstring fpsStr = to_wstring(fps);
+		wstring mpsfStr = to_wstring(mspf);
+
+		wstring windowText = m_MainWndCaption +
+			L"    fps: " + fpsStr +
+			L"   mfps: " + mpsfStr;
+
+		SetWindowText(m_hMainWnd, windowText.c_str());
+
+		// 다음 평균을 위해 초기화 합니다.
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
+}
+
+void CMainApp::Update(const float& DT)
 {
 }
 
-HRESULT CMainApp::Render()
+void CMainApp::Draw(const float& DT)
 {
 	m_pGameInstance->Draw();
-	return S_OK;
 }
 
 void CMainApp::Free()
 {
+	Safe_Release(m_pGameInstance);
+	Safe_Release(m_pTimer);
+	Safe_Release(m_pInput_Dev);
 }

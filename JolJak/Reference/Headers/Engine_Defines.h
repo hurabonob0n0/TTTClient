@@ -44,6 +44,11 @@
 #include <crtdbg.h>
 #endif
 
+BEGIN(Engine)
+	enum MOUSEKEYSTATE { LBTN, RBTN, MBTN, MKS_END };
+	enum MOUSEMOVESTATE { X, Y, Z };
+END
+
 using namespace std;
 using namespace Engine;
 using namespace DirectX;

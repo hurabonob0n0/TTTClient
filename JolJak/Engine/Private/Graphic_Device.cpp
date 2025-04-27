@@ -411,6 +411,23 @@ CGraphic_Device* CGraphic_Device::Create(HWND winHandle)
 
 void CGraphic_Device::Free()
 {
+    FlushCommandQueue();
+    for (int i = 0; i < SwapChainBufferCount; ++i)
+        Safe_Release(m_SwapChainBuffer[i]);
+
+    Safe_Release(m_DepthStencilBuffer);
+
+    Safe_Release(m_RtvHeap);
+    Safe_Release(m_DsvHeap);
+
+    Safe_Release(m_SwapChain);
+    Safe_Release(m_CommandList);
+    Safe_Release(m_DirectCmdListAlloc);
+    Safe_Release(m_CommandQueue);
+    Safe_Release(m_Fence);
+
+    Safe_Release(m_d3dDevice);
+    Safe_Release(m_dxgiFactory);
 #if defined(DEBUG) | defined(_DEBUG)
     // D3D12 디버그 레이어를 활성화 합니다.
     {

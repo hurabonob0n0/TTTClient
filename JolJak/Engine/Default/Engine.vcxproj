@@ -118,12 +118,15 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../public/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../public/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,7 +139,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../public/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../public/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,6 +147,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -157,6 +163,8 @@
     <ClInclude Include="..\Public\GeometryGenerator.h" />
     <ClInclude Include="..\public\Graphic_Device.h" />
     <ClInclude Include="..\Public\MathHelper.h" />
+    <ClInclude Include="..\public\Raw_Input.h" />
+    <ClInclude Include="..\public\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp" />
@@ -166,6 +174,8 @@
     <ClCompile Include="..\Private\GeometryGenerator.cpp" />
     <ClCompile Include="..\private\Graphic_Device.cpp" />
     <ClCompile Include="..\Private\MathHelper.cpp" />
+    <ClCompile Include="..\private\Raw_Input.cpp" />
+    <ClCompile Include="..\private\Timer.cpp" />
     <ClCompile Include="dllmain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
