@@ -154,6 +154,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h" />
+    <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\Public\d3dUtil.h" />
     <ClInclude Include="..\Public\DDSTextureLoader.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
@@ -165,9 +166,11 @@
     <ClInclude Include="..\Public\MathHelper.h" />
     <ClInclude Include="..\public\Raw_Input.h" />
     <ClInclude Include="..\public\Timer.h" />
+    <ClInclude Include="..\public\VIBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp" />
+    <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\Private\d3dUtil.cpp" />
     <ClCompile Include="..\Private\DDSTextureLoader.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
@@ -176,6 +179,7 @@
     <ClCompile Include="..\Private\MathHelper.cpp" />
     <ClCompile Include="..\private\Raw_Input.cpp" />
     <ClCompile Include="..\private\Timer.cpp" />
+    <ClCompile Include="..\private\VIBuffer.cpp" />
     <ClCompile Include="dllmain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
