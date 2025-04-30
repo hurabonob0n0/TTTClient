@@ -6,7 +6,7 @@ BEGIN(Engine)
 class ENGINE_DLL CComponent abstract : public CBase
 {
 protected:
-	CComponent(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+	CComponent(ID3D12Device* pDevice);
 	CComponent(const CComponent& rhs);
 	virtual ~CComponent() = default;
 
@@ -15,8 +15,7 @@ public:
 	virtual HRESULT Initialize(void* pArg) = 0;
 
 protected:
-	ID3D12Device*				m_Device = { nullptr };
-	ID3D12GraphicsCommandList*	m_CommandList = { nullptr };
+	ID3D12Device* m_pDevice = { nullptr };
 
 public:
 	virtual CComponent* Clone(void* pArg) = 0;

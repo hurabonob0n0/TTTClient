@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine_Macro.h"
 #include "Engine_Function.h"
+#include "Engine_Struct.h"
 
 #include <d3d12.h>
 #include <d3dx12.h>
@@ -11,8 +12,6 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
 
 
 #include <vector>

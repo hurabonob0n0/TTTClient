@@ -6,7 +6,7 @@ BEGIN(Engine)
 class ENGINE_DLL CVIBuffer abstract: public CComponent
 {
 protected:
-	CVIBuffer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+	CVIBuffer(ID3D12Device* pDevice);
 	CVIBuffer(CVIBuffer& rhs);
 	virtual ~CVIBuffer() = default;
 
