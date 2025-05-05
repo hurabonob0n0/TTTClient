@@ -3,16 +3,20 @@
 
 BEGIN(Engine)
 
-class ENGINE_DLL CVIBuffer abstract: public CComponent
+class ENGINE_DLL CVIBuffer abstract: public CComponent_DC
 {
 protected:
-	CVIBuffer(ID3D12Device* pDevice);
+	CVIBuffer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
 	CVIBuffer(CVIBuffer& rhs);
 	virtual ~CVIBuffer() = default;
 
-protected:
+public:
+	virtual HRESULT Render() = 0;
+
+public:
 	D3D12_VERTEX_BUFFER_VIEW	VertexBufferView()const;
 	D3D12_INDEX_BUFFER_VIEW		IndexBufferView()const;
+	D3D12_PRIMITIVE_TOPOLOGY	PrimitiveType()const;
 
 protected:
 	void DisposeUploaders();
@@ -43,7 +47,7 @@ public:
 	virtual HRESULT Initialize(void* pArg) = 0;
 
 public:
-	CComponent* Clone(void* pArg) = 0;
+	CComponent_DC* Clone(void* pArg) = 0;
 	virtual void Free() override;
 };
 

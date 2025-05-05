@@ -1,0 +1,58 @@
+#pragma once
+#include "Component.h"
+
+BEGIN(Engine)
+
+class ENGINE_DLL CTransform : public CComponent
+{
+public:
+	enum STATE { STATE_RIGHT, STATE_UP, STATE_LOOK, STATE_POSITION, STATE_END };
+
+public:
+	CTransform();
+	CTransform(const CTransform& rhs);
+	virtual ~CTransform() = default;
+
+public:
+	XMVECTOR Get_State(STATE eState) const {
+		return XMLoadFloat4x4(&m_WorldMatrix).r[eState];
+	}
+	XMFLOAT4X4 Get_WorldFloat4x4_Inverse() {
+		XMFLOAT4X4	WorldMatrixInverse;
+		XMStoreFloat4x4(&WorldMatrixInverse, XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix)));
+		return WorldMatrixInverse;
+	}
+	XMMATRIX Get_WorldMatrix() const {
+		return XMLoadFloat4x4(&m_WorldMatrix);
+	}
+
+	XMMATRIX Get_WorldMatrix_Inverse() {
+		return XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix));
+	}
+
+	void Set_State(STATE eState, XMVECTOR vState)
+	{
+		XMMATRIX TransformMatrix = XMLoadFloat4x4(&m_WorldMatrix);
+		TransformMatrix.r[eState] = vState;
+		XMStoreFloat4x4(&m_WorldMatrix, TransformMatrix);
+	}
+
+	void Set_WorldMatrix(const XMFLOAT4X4& Worldmat)
+	{
+		m_WorldMatrix = Worldmat;
+	}
+
+public:
+	HRESULT Initialize_Prototype() override;
+	HRESULT Initialize(void* pArg) override;
+
+private:
+	XMFLOAT4X4	m_WorldMatrix;
+
+public:
+	static CTransform* Create();
+	CComponent* Clone(void* pArg) override;
+	virtual void Free() override;
+};
+
+END

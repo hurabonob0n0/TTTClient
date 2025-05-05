@@ -1,11 +1,11 @@
 #include "VIBuffer.h"
 
 
-CVIBuffer::CVIBuffer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) : CComponent(pDevice,pCommandList)
+CVIBuffer::CVIBuffer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) : CComponent_DC(pDevice,pCommandList)
 {
 }
 
-CVIBuffer::CVIBuffer(CVIBuffer& rhs) : CComponent(rhs)
+CVIBuffer::CVIBuffer(CVIBuffer& rhs) : CComponent_DC(rhs)
 {
 	m_VertexByteStride		= rhs.m_VertexByteStride;
 	m_VertexNum				= rhs.m_VertexNum;
@@ -19,6 +19,9 @@ CVIBuffer::CVIBuffer(CVIBuffer& rhs) : CComponent(rhs)
 	
 	m_VertexBufferGPU		= rhs.m_VertexBufferGPU;
 	m_IndexBufferGPU		= rhs.m_IndexBufferGPU;
+
+	rhs.DisposeUploaders();
+
 	Safe_AddRef(m_VertexBufferGPU);
 	Safe_AddRef(m_IndexBufferGPU);
 }
@@ -43,6 +46,11 @@ D3D12_INDEX_BUFFER_VIEW CVIBuffer::IndexBufferView() const
 	return ibv;
 }
 
+D3D12_PRIMITIVE_TOPOLOGY CVIBuffer::PrimitiveType() const
+{
+	return m_PrimitiveType;
+}
+
 void CVIBuffer::DisposeUploaders()
 {
 	Safe_Release(m_VertexBufferUploader);
@@ -53,8 +61,7 @@ void CVIBuffer::Free()
 {
 	Safe_Release(m_VertexBufferGPU);
 	Safe_Release(m_IndexBufferGPU);
-	Safe_Release(m_VertexBufferUploader);
-	Safe_Release(m_IndexBufferUploader);
+
 	__super::Free();
 }
 

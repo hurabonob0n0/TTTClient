@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "Timer.h"
 #include "Raw_Input.h"
+#include "BaseGeo.h"
 
 IMPLEMENT_SINGLETON(CMainApp)
 
@@ -27,6 +28,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 		CMainApp* mainApp = CMainApp::Get_Instance();
 		if (FAILED(mainApp->Initialize(hInstance)))
 			return 0;
+
+
 
 		return mainApp->Run();
 	}
@@ -73,10 +76,10 @@ int CMainApp::Run()
 
 			if (!m_AppPaused)
 			{
-				const float DT = m_pTimer->DeltaTime();
+				//const float DT = m_pTimer->DeltaTime();
 				CalculateFrameStats();
-				Update(DT);
-				Draw(DT);
+				Update(m_pTimer);
+				Draw();
 			}
 			else
 			{
@@ -313,11 +316,12 @@ void CMainApp::CalculateFrameStats()
 	}
 }
 
-void CMainApp::Update(const float& DT)
+void CMainApp::Update(const CTimer* Timer)
 {
+	m_pGameInstance->Update(m_pTimer);
 }
 
-void CMainApp::Draw(const float& DT)
+void CMainApp::Draw()
 {
 	m_pGameInstance->Draw();
 }

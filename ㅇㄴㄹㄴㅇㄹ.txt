@@ -1,5 +1,12 @@
-수 네모 그리기
-목 조명 처리하기 스카이박스 그리기
-금 터레인 그리기 그림자 그리기
-토 내 모델 임포트하기
-일 움직임 구현하기
+CBVDescriptor Heap 만들기               1시간
+CBV 만들기                                  30분
+Resource 타입의 Uploadbuffer 만들기 => CTransform      1시간
+CGameObject 만들기                       1시간
+CCamera 만들기                             30분
+CFrameResource 만들기                   30분
+CRenderer 만들기                           30분
+CShader 만들기                              30분
+CPSO 만들기                                 30분
+CSkyBox 만들기                              30분
+CShadow 만들기                             2시간
+모델 임포트 			2시간

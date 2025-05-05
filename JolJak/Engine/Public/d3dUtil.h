@@ -29,7 +29,7 @@
 #include "DDSTextureLoader.h"
 #include "MathHelper.h"
 
-extern const int gNumFrameResources;
+static const int gNumFrameResources = 3;
 
 inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
 {
@@ -77,14 +77,16 @@ public:
         return (byteSize + 255) & ~255;
     }
 
-    static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
+    /*static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
         ID3D12Device* device,
         ID3D12GraphicsCommandList* cmdList,
         const void* initData,
         UINT64 byteSize,
-        Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
+        Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);*/
 
-    static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
+    static ID3D12Resource* CreateDefaultBuffer(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, const void* initData, UINT64 byteSize, ID3D12Resource** uploadBuffer);
+
+    static ID3DBlob* CompileShader(
         const std::wstring& filename,
         const D3D_SHADER_MACRO* defines,
         const std::string& entrypoint,

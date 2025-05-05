@@ -14,6 +14,12 @@
     <Filter Include="99.Headers\Default">
       <UniqueIdentifier>{62d61cc5-3270-4402-a58f-3dd1d11dcca7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.RenderObject">
+      <UniqueIdentifier>{f51913f8-2105-4e3e-9076-21c5c97f4441}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.ShaderFiles">
+      <UniqueIdentifier>{89307e67-8956-4072-a055-f2e5bc87e164}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -49,5 +55,10 @@
     <ClCompile Include="..\Private\MainApp.cpp">
       <Filter>00.MainApp</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Bin\ShaderFiles\color.hlsl">
+      <Filter>99.ShaderFiles</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

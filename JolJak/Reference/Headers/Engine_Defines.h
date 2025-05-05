@@ -31,7 +31,9 @@
 #include <sstream>
 #include <cassert>
 #include "d3dUtil.h"
+#include "GeometryGenerator.h"
 #include "MathHelper.h"
+#include "UploadBuffer.hpp"
 
 // 필요한 d3d12 라이브러리 링크
 #pragma comment(lib, "d3dcompiler.lib")
@@ -47,6 +49,8 @@ BEGIN(Engine)
 	enum MOUSEKEYSTATE { LBTN, RBTN, MBTN, MKS_END };
 	enum MOUSEMOVESTATE { X, Y, Z };
 END
+
+//static const int gNumFrameResources = 3;
 
 using namespace std;
 using namespace Engine;

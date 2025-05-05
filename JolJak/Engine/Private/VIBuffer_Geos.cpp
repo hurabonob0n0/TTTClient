@@ -6,6 +6,18 @@ CVIBuffer_Geos::CVIBuffer_Geos(ID3D12Device* pDevice, ID3D12GraphicsCommandList*
 
 CVIBuffer_Geos::CVIBuffer_Geos(CVIBuffer_Geos& rhs) : CVIBuffer(rhs)
 {
+	m_SubMeshInfos = rhs.m_SubMeshInfos;
+}
+
+HRESULT CVIBuffer_Geos::Render()
+{
+	m_CommandList->IASetVertexBuffers(0, 1, &VertexBufferView());
+	m_CommandList->IASetIndexBuffer(&IndexBufferView());
+	m_CommandList->IASetPrimitiveTopology(m_PrimitiveType);
+
+	m_CommandList->DrawIndexedInstanced(m_RenderedSubMesh.IndexCount, 1, m_RenderedSubMesh.StartIndexLocation, m_RenderedSubMesh.BaseVertexLocation, 0);
+
+	return S_OK;
 }
 
 HRESULT CVIBuffer_Geos::Initialize_Prototype()
@@ -61,13 +73,13 @@ HRESULT CVIBuffer_Geos::Initialize_Prototype()
 	// vertices of all the meshes into one vertex buffer.
 	//
 
-	auto totalVertexCount =
+	m_VertexNum =
 		box.Vertices.size() +
 		grid.Vertices.size() +
 		sphere.Vertices.size() +
 		cylinder.Vertices.size();
 
-	std::vector<VTXPOSNOR> vertices(totalVertexCount);
+	std::vector<VTXPOSNOR> vertices(m_VertexNum);
 
 	UINT k = 0;
 	for (size_t i = 0; i < box.Vertices.size(); ++i, ++k)
@@ -100,11 +112,15 @@ HRESULT CVIBuffer_Geos::Initialize_Prototype()
 	indices.insert(indices.end(), std::begin(sphere.GetIndices16()), std::end(sphere.GetIndices16()));
 	indices.insert(indices.end(), std::begin(cylinder.GetIndices16()), std::end(cylinder.GetIndices16()));
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(VTXPOSNOR);
-	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+	m_IndexNum = indices.size();
+	m_IndexFormat = DXGI_FORMAT_R16_UINT;
 
-	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "shapeGeo";
+	const UINT vbByteSize = m_VertexNum * sizeof(VTXPOSNOR);
+	const UINT ibByteSize = m_IndexNum * sizeof(std::uint16_t);
+
+	/*auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "shapeGeo";*/
+
 
 	/*ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
@@ -112,24 +128,40 @@ HRESULT CVIBuffer_Geos::Initialize_Prototype()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);*/
 
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
-		m_CommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
+	m_VertexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
+		m_CommandList, vertices.data(), vbByteSize, &m_VertexBufferUploader);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
-		m_CommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
+	/*geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
+		m_CommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);*/
 
-	geo->VertexByteStride = sizeof(Vertex);
-	geo->VertexBufferByteSize = vbByteSize;
-	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	geo->IndexBufferByteSize = ibByteSize;
+	m_IndexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
+		m_CommandList, indices.data(), ibByteSize, &m_IndexBufferUploader);
 
-	geo->DrawArgs["box"] = boxSubmesh;
+	/*geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(m_Device,
+		m_CommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);*/
+
+	m_VertexByteStride = sizeof(VTXPOSNOR);
+	m_VertexBufferByteSize = vbByteSize;
+	m_IndexFormat = DXGI_FORMAT_R16_UINT;
+	m_IndexBufferByteSize = ibByteSize;
+
+	/*geo->DrawArgs["box"] = boxSubmesh;
 	geo->DrawArgs["grid"] = gridSubmesh;
 	geo->DrawArgs["sphere"] = sphereSubmesh;
-	geo->DrawArgs["cylinder"] = cylinderSubmesh;
+	geo->DrawArgs["cylinder"] = cylinderSubmesh;*/
+	m_SubMeshInfos[BASIC_SUBMESHES::BS_BOX] = boxSubmesh;
+	m_SubMeshInfos[BASIC_SUBMESHES::BS_GRID] = gridSubmesh;
+	m_SubMeshInfos[BASIC_SUBMESHES::BS_SPHERE] = sphereSubmesh;
+	m_SubMeshInfos[BASIC_SUBMESHES::BS_CYLINDER] = cylinderSubmesh;
 
-	mGeometries[geo->Name] = std::move(geo);
+	m_PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	m_RenderedSubMeshName = BASIC_SUBMESHES::BS_BOX;
+	m_RenderedSubMesh = m_SubMeshInfos[m_RenderedSubMeshName];
+
     return S_OK;
+
+	//1. 일단 
 
 	//Todo: CVIBuffer의 VertexBufferView()함수랑 IndexBufferView()함수를 쓰던가 override해서 아래 함수들 쓸 수 있도록 만들어야함.
 	// cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
@@ -140,19 +172,42 @@ HRESULT CVIBuffer_Geos::Initialize_Prototype()
 
 HRESULT CVIBuffer_Geos::Initialize(void* pArg)
 {
+	if (pArg == nullptr)
+	{
+		m_RenderedSubMeshName = BASIC_SUBMESHES::BS_BOX;
+		m_RenderedSubMesh = m_SubMeshInfos[m_RenderedSubMeshName];
+		return S_OK;
+	}
+
+	m_RenderedSubMeshName = *(BASIC_SUBMESHES*)pArg;
+	m_RenderedSubMesh = m_SubMeshInfos[m_RenderedSubMeshName];
+
     return S_OK;
 }
 
-CVIBuffer_Geos* CVIBuffer_Geos::Create(ID3D12Device* pDevice)
+CVIBuffer_Geos* CVIBuffer_Geos::Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
 {
-    return nullptr;
+	CVIBuffer_Geos* pInstance = new CVIBuffer_Geos(pDevice, pCommandList);
+	if (FAILED(pInstance->Initialize_Prototype())) {
+		MSG_BOX("Failed to Create : CVIBuffer_Geo");
+		Safe_Release(pInstance);
+	}
+    return pInstance;
 }
 
-CComponent* CVIBuffer_Geos::Clone(void* pArg)
+CComponent_DC* CVIBuffer_Geos::Clone(void* pArg)
 {
-    return nullptr;
+	CVIBuffer_Geos* pInstance = new CVIBuffer_Geos(*this);
+
+	if (FAILED(pInstance->Initialize(pArg))) {
+		MSG_BOX("Failed to Cloned : CVIBuffer_Geo");
+		Safe_Release(pInstance);
+	}
+
+    return pInstance;
 }
 
 void CVIBuffer_Geos::Free()
 {
+	__super::Free();
 }

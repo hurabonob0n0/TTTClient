@@ -2,11 +2,23 @@
 #include "Base.h"
 
 BEGIN(Engine)
+class CVIBuffer_Geos;
+END
+
+BEGIN(Engine)
 class ENGINE_DLL CGraphic_Device final : public CBase
 {
 private:
 	CGraphic_Device();
 	virtual ~CGraphic_Device() = default;
+
+public:
+    ID3D12Device* Get_Device() const { return m_d3dDevice; }
+    ID3D12GraphicsCommandList* Get_CommandList() const { return m_CommandList; }
+    ID3D12CommandQueue* Get_CommandQueue() const { return m_CommandQueue; }
+    ID3D12CommandAllocator* Get_CommandAlloc() const { return m_DirectCmdListAlloc; }
+    ID3D12Fence* Get_Fence() const { return m_Fence; }
+    UINT64& Get_Fence_Value() { return m_CurrentFence; }
 
 public:
 	bool Initialize(HWND windowHandle);
@@ -17,7 +29,10 @@ public:
     void FlushCommandQueue();
 
 public:
-    bool Draw();
+    bool Draw_1();
+
+public:
+    bool Draw_2();
 
 public:
     ID3D12Resource* CurrentBackBuffer() const;
@@ -28,7 +43,6 @@ public:
     void LogAdapters();
     void LogAdapterOutputs(IDXGIAdapter* adapter);
     void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
-
 
 private:
     bool m4xMsaaState = false;

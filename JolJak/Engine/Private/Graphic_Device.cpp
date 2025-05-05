@@ -1,4 +1,5 @@
 #include "Graphic_Device.h"
+#include "VIBuffer_Geos.h"
 
 CGraphic_Device::CGraphic_Device()
 {
@@ -90,11 +91,13 @@ void CGraphic_Device::CreateSwapChain(HWND windowHandle)
         m_SwapChain->Release();
         m_SwapChain = nullptr;
     }*/
+    Safe_Release(m_SwapChain);
+
 
     DXGI_SWAP_CHAIN_DESC sd;
     sd.BufferDesc.Width = m_ClientWidth;
     sd.BufferDesc.Height = m_ClientHeight;
-    sd.BufferDesc.RefreshRate.Numerator = 240;
+    sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferDesc.Format = m_BackBufferFormat;
     sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -257,14 +260,14 @@ void CGraphic_Device::FlushCommandQueue()
     }
 }
 
-bool CGraphic_Device::Draw()
+bool CGraphic_Device::Draw_1()
 {
-    // 커맨드 기록을 위한 메모리를 재활용 합니다.
-    // 제출한 커맨드들이 GPU에서 모두 끝났을때 리셋할 수 있습니다.
-    ThrowIfFailed(m_DirectCmdListAlloc->Reset());
+    //// 커맨드 기록을 위한 메모리를 재활용 합니다.
+    //// 제출한 커맨드들이 GPU에서 모두 끝났을때 리셋할 수 있습니다.
+    //ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
-    // ExecuteCommandList를 통해 커맨드 큐에 제출한 다음에 커맨드 리스트를 리셋할 수 있습니다.
-    ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc, nullptr));
+    //// ExecuteCommandList를 통해 커맨드 큐에 제출한 다음에 커맨드 리스트를 리셋할 수 있습니다.
+    //ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc, nullptr));
 
     // 리소스의 상태를 렌더링을 할 수 있도록 변경합니다.
     m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -281,6 +284,11 @@ bool CGraphic_Device::Draw()
 
     // 어디에 렌더링을 할지 설정합니다.
     m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+    return true;
+}
+bool CGraphic_Device::Draw_2()
+{
 
     // 리소스의 상태를 출력할 수 있도록 변경합니다.
     m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -301,7 +309,8 @@ bool CGraphic_Device::Draw()
     // 프레임의 커맨드들이 모두 처리될 때까지 기다립니다.
     // 이렇게 기다리는것은 비효율적이지만 예제를 간단하게 하기 위해서 기다립니다.
     // 나중에 기다리지 않고 렌더링을 하는법을 알아볼 것입니다.
-    FlushCommandQueue();
+    //FlushCommandQueue();
+    return true;
 }
 
 ID3D12Resource* CGraphic_Device::CurrentBackBuffer() const

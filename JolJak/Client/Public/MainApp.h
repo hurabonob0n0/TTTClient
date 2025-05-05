@@ -26,10 +26,10 @@ public:
 	HRESULT Initialize(HINSTANCE g_hInstance);
 
 public:
-	void Update(const float& DeltaTime);
+	void Update(const CTimer* Timer);
 
 public:
-	void Draw(const float& DeltaTime);
+	void Draw();
 
 public: //----------- For Debug : FPS ---------------
 	void CalculateFrameStats();
@@ -53,8 +53,8 @@ private:
 
 private:
 	CGameInstance*		m_pGameInstance = { nullptr };
-	CTimer*				m_pTimer = { nullptr };
 	CRawInput_Device*	m_pInput_Dev{ nullptr };
+	CTimer*				m_pTimer = { nullptr };
 
 public:
 	virtual void Free() override;
