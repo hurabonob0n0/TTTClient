@@ -20,6 +20,7 @@ public:
     HRESULT AddObject(const string& layerTag, CGameObject* pGameObject);
     HRESULT RemoveObject(const string& layerTag, CGameObject* pGameObject);
 
+
     void Update(const float& fTimeDelta);
     void LateUpdate(const float& fTimeDelta);
 

@@ -1,6 +1,9 @@
+#include "pch.h"
 #include "BoxObj.h"
 #include "GameInstance.h"
 #include "VIBuffer_Terrain.h"
+#include "ClientPacketHandler.h"
+#include "ServiceManager.h"
 
 CBoxObj::CBoxObj() : CRenderObject()
 {
@@ -36,9 +39,21 @@ void CBoxObj::Tick(float fTimeDelta)
     
     float TerrainY = ((CVIBuffer_Terrain*)(m_GameInstance->GetPrototype("TerrainCom")))->Get_Terrain_Heights(Position.x,Position.z);
 
-    m_TransformCom->Set_State(CTransform::STATE_POSITION, _vector{ Position.x,TerrainY,Position.z,1.f });
+  
 
-    __super::Tick(fTimeDelta);
+   m_TransformCom->Set_State(CTransform::STATE_POSITION, _vector{ Position.x,TerrainY,Position.z,1.f });
+  
+#pragma region MakeSendBuffer & Send Data
+
+   /* XMVECTOR temp = m_TransformCom->Get_State(CTransform::STATE_POSITION);
+   temp.m128_f32;*/
+   SendBufferRef sendBuffer = ClientPacketHandler::Make_C_MOVE(Position.x, TerrainY, Position.z);
+   ServiceManager::GetInstace().GetService()->Broadcast(sendBuffer);
+
+#pragma endregion TODO : 여기 좌표 수정 필요
+
+
+   __super::Tick(fTimeDelta);
 }
 
 void CBoxObj::LateTick(float fTimeDelta)

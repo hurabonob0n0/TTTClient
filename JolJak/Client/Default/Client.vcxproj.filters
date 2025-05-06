@@ -32,6 +32,15 @@
     <Filter Include="01.RenderObject\Players">
       <UniqueIdentifier>{ae3e87e3-0eb5-4998-8355-1dab9468f71b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="98.ForServer">
+      <UniqueIdentifier>{05fdf984-b6d7-4bca-b5d0-bc39d8027973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.ForServer\PacketHandler">
+      <UniqueIdentifier>{5865f904-6715-4fec-ac01-84921af95007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.ForServer\ServiceManager">
+      <UniqueIdentifier>{35a31056-9d75-4b76-9188-57a3d930fc09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -42,9 +51,6 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>99.Headers\Default</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Client_Defines.h">
-      <Filter>99.Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MainApp.h">
       <Filter>00.MainApp</Filter>
@@ -60,6 +66,19 @@
     </ClInclude>
     <ClInclude Include="..\public\Player.h">
       <Filter>01.RenderObject\Players</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\Public\ClientPacketHandler.h">
+      <Filter>98.ForServer\PacketHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ServiceManager.h">
+      <Filter>98.ForServer\ServiceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>99.Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Client_Defines.h">
+      <Filter>99.Headers\Default</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -91,5 +110,17 @@
     <ClCompile Include="..\private\Player.cpp">
       <Filter>01.RenderObject\Players</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="..\Private\ClientPacketHandler.cpp">
+      <Filter>98.ForServer\PacketHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ServiceManager.cpp">
+      <Filter>98.ForServer\ServiceManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="PacketProtocol.txt">
+      <Filter>98.ForServer</Filter>
+    </Text>
   </ItemGroup>
 </Project>
