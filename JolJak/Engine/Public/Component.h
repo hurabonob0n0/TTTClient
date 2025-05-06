@@ -11,8 +11,8 @@ protected:
 	virtual ~CComponent() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype() = 0;
-	virtual HRESULT Initialize(void* pArg) = 0;
+	virtual HRESULT Initialize_Prototype() { return S_OK; }
+	virtual HRESULT Initialize(void* pArg) { return S_OK; }
 
 public:
 	virtual CComponent* Clone(void* pArg) = 0;
@@ -27,8 +27,8 @@ protected:
 	virtual ~CComponent_DC() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype() = 0;
-	virtual HRESULT Initialize(void* pArg) = 0;
+	virtual HRESULT Initialize_Prototype() {return S_OK;}
+	virtual HRESULT Initialize(void* pArg) { return S_OK; }
 
 protected:
 	ID3D12Device*				m_Device = { nullptr };

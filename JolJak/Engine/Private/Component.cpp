@@ -28,4 +28,5 @@ void CComponent_DC::Free()
 {
 	Safe_Release(m_Device);
 	Safe_Release(m_CommandList);
+	__super::Free();
 }

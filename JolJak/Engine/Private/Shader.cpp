@@ -5,10 +5,10 @@ CShader::CShader(SHADER_TYPE ST, const wstring& filepath, const D3D_SHADER_MACRO
 	switch (ST)
 	{
 	case Engine::CShader::ST_VS:
-		m_Shader = d3dUtil::CompileShader(filepath, defines, "VS", "vs_5_0");
+		m_Shader = d3dUtil::CompileShader(filepath, defines, "VS", "vs_5_1");
 		break;
 	case Engine::CShader::ST_PS:
-		m_Shader = d3dUtil::CompileShader(filepath, defines, "PS", "ps_5_0");
+		m_Shader = d3dUtil::CompileShader(filepath, defines, "PS", "ps_5_1");
 		break;
 	default:
 		break;

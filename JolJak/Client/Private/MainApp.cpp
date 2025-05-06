@@ -3,7 +3,10 @@
 #include "GameInstance.h"
 #include "Timer.h"
 #include "Raw_Input.h"
-#include "BaseGeo.h"
+#include "BoxObj.h"
+#include "Terrain.h"
+#include "Input_Device.h"
+#include "Tank.h"
 
 IMPLEMENT_SINGLETON(CMainApp)
 
@@ -15,27 +18,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 #endif
 	//_CrtSetBreakAlloc(158);
 	//_CrtSetBreakAlloc(159);
-
-	/*CMainApp* mainApp = CMainApp::Get_Instance();
-	if (FAILED(mainApp->Initialize(hInstance)))
-		return FALSE;
-
-	mainApp->Run();*/
-
-
 	try
 	{
 		CMainApp* mainApp = CMainApp::Get_Instance();
 		if (FAILED(mainApp->Initialize(hInstance)))
 			return 0;
 
-
-
 		return mainApp->Run();
 	}
 	catch (DxException& e)
 	{
-		//MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
 
@@ -51,8 +43,10 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return CMainApp::Get_Instance()->MsgProc(hwnd, msg, wParam, lParam);
 }
 
-CMainApp::CMainApp() : m_pGameInstance(CGameInstance::Get_Instance()), m_pTimer(CTimer::Get_Instance()), m_pInput_Dev(CRawInput_Device::Get_Instance())
+CMainApp::CMainApp() : m_pGameInstance(CGameInstance::Get_Instance()), m_pTimer(CTimer::Get_Instance()), m_pInput_Dev(CRawInput_Device::Get_Instance()) //m_pInput_Dev(CInput_Device::Get_Instance())
 {
+	//ShowCursor(FALSE);                   // 커서 숨기기
+	ClipCursor(nullptr);                 // 클리핑 해제 (다른 데선 NULL 해제용)
 }
 
 int CMainApp::Run()
@@ -76,10 +70,27 @@ int CMainApp::Run()
 
 			if (!m_AppPaused)
 			{
-				//const float DT = m_pTimer->DeltaTime();
+				
 				CalculateFrameStats();
 				Update(m_pTimer);
 				Draw();
+				
+				
+
+				// 3) 커서가 윈도우 밖으로 나가지 않도록 클리핑
+				//ClipCursor(&rc);
+
+				
+				//m_pInput_Dev->UpdateKeyStates();
+				m_pInput_Dev->ResetPerFrame();
+
+				//POINT center = {
+				//	1280,720
+				//};
+				//ClientToScreen(m_hMainWnd, &center);
+
+				//// 2) 마우스 커서 중앙 이동
+				//SetCursorPos(center.x, center.y);
 			}
 			else
 			{
@@ -87,7 +98,8 @@ int CMainApp::Run()
 			}
 		}
 	}
-
+	//Safe_Release(m_pGameInstance);
+	
 	RELEASE_INSTANCE(CMainApp);
 
 	return (int)msg.wParam;
@@ -276,16 +288,79 @@ HRESULT CMainApp::Initialize_MainWindow(HINSTANCE g_hInstance)
 
 HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 {
+#pragma region Base Initialize
 	Initialize_MainWindow(g_hInstance);
 
+	//m_pInput_Dev->Initialize(g_hInstance,m_hMainWnd);
 	m_pInput_Dev->Initialize(m_hMainWnd);
 
-	if (FAILED(m_pGameInstance->Initialize_Engine(m_hMainWnd)))
+	if (FAILED(m_pGameInstance->Initialize_Engine(m_hMainWnd,m_pInput_Dev)))
 		return E_FAIL;
 
 	m_pGameInstance->OnResize();
+#pragma endregion
+
+	m_pGameInstance->m_pGraphic_Device->FlushCommandQueue();
+
+	m_pGameInstance->m_pGraphic_Device->Get_CommandList()->Reset(m_pGameInstance->Get_CommandAlloc() , nullptr);
+
+	m_pGameInstance->AddPrototype("TransformCom", CTransform::Create());
+	m_pGameInstance->AddPrototype("TerrainCom", CVIBuffer_Terrain::Create(m_pGameInstance->Get_Device(),m_pGameInstance->Get_CommandList(),"../Bin/Models/Terrain/Terrain.png",0.3f,1.f));
+	m_pGameInstance->AddPrototype("BaseGeosCom", CVIBuffer_Geos::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList()));
+	//m_pGameInstance->AddPrototype("TankModel", CModel::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList(), CModel::TYPE_NONANIM, "../bin/Models/Tank/M1A2.FBX"));
+	
+	m_pGameInstance->AddObject("Camera", CCamera::Create());
+	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
+	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
+	m_pGameInstance->AddObject("Terrain", CTerrain::Create());
+	//m_pGameInstance->AddObject("Tank", CTank::Create());
+
+	m_pGameInstance->Get_CommandList()->Close();
+	ID3D12CommandList* cmdLists[] = { m_pGameInstance->Get_CommandList()};
+	m_pGameInstance->Get_CommandQueue()->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	// 크기 변경을 위한 명령들이 처리될때까지 기다린다.
+	m_pGameInstance->m_pGraphic_Device->FlushCommandQueue();
+
 
 	return S_OK;
+}
+
+void CMainApp::Prepare_Textures()
+{
+	std::vector<std::string> texNames =
+	{
+		"bricksDiffuseMap",
+		"bricksNormalMap",
+		"tileDiffuseMap",
+		"tileNormalMap",
+		"defaultDiffuseMap",
+		"defaultNormalMap",
+		"skyCubeMap"
+	};
+
+	std::vector<std::wstring> texFilenames =
+	{
+		L"../../Textures/bricks2.dds",
+		L"../../Textures/bricks2_nmap.dds",
+		L"../../Textures/tile.dds",
+		L"../../Textures/tile_nmap.dds",
+		L"../../Textures/white1x1.dds",
+		L"../../Textures/default_nmap.dds",
+		L"../../Textures/snowcube1024.dds"
+	};
+}
+
+void CMainApp::Prepare_Materials()
+{
+}
+
+void CMainApp::Prepare_Components()
+{
+}
+
+void CMainApp::Make_Objects()
+{
 }
 
 void CMainApp::CalculateFrameStats()
@@ -319,6 +394,8 @@ void CMainApp::CalculateFrameStats()
 void CMainApp::Update(const CTimer* Timer)
 {
 	m_pGameInstance->Update(m_pTimer);
+
+
 }
 
 void CMainApp::Draw()
@@ -328,7 +405,7 @@ void CMainApp::Draw()
 
 void CMainApp::Free()
 {
-	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pTimer);
 	Safe_Release(m_pInput_Dev);
+	Safe_Release(m_pTimer);
+	Safe_Release(m_pGameInstance);
 }

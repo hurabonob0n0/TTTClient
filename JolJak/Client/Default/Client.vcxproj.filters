@@ -20,6 +20,18 @@
     <Filter Include="99.ShaderFiles">
       <UniqueIdentifier>{89307e67-8956-4072-a055-f2e5bc87e164}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.RenderObject\00.BaseBoxObj">
+      <UniqueIdentifier>{6d3d56b2-2d49-401f-92bb-b65d29788b7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.RenderObject\01.Terrain">
+      <UniqueIdentifier>{36153a7d-138b-4bab-ba88-3629f64da92d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.RenderObject\02.Tank">
+      <UniqueIdentifier>{1bde1caf-cd3e-4921-9225-209a728b1460}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.RenderObject\Players">
+      <UniqueIdentifier>{ae3e87e3-0eb5-4998-8355-1dab9468f71b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -36,6 +48,18 @@
     </ClInclude>
     <ClInclude Include="..\Public\MainApp.h">
       <Filter>00.MainApp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\BoxObj.h">
+      <Filter>01.RenderObject\00.BaseBoxObj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Terrain.h">
+      <Filter>01.RenderObject\01.Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Tank.h">
+      <Filter>01.RenderObject\02.Tank</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Player.h">
+      <Filter>01.RenderObject\Players</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -55,10 +79,17 @@
     <ClCompile Include="..\Private\MainApp.cpp">
       <Filter>00.MainApp</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\Bin\ShaderFiles\color.hlsl">
-      <Filter>99.ShaderFiles</Filter>
-    </FxCompile>
+    <ClCompile Include="..\Private\BoxObj.cpp">
+      <Filter>01.RenderObject\00.BaseBoxObj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Terrain.cpp">
+      <Filter>01.RenderObject\01.Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Tank.cpp">
+      <Filter>01.RenderObject\02.Tank</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Player.cpp">
+      <Filter>01.RenderObject\Players</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

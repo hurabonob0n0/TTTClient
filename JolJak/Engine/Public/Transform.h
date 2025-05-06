@@ -43,6 +43,20 @@ public:
 	}
 
 public:
+	HRESULT Go_Straight(float fTimeDelta);
+	HRESULT Go_Backward(float fTimeDelta);
+	HRESULT Go_Left(float fTimeDelta);
+	HRESULT Go_Right(float fTimeDelta);
+	/*HRESULT Go_Direction(XMFLOAT3 fDir, float fTimeDelta);
+	HRESULT Move_Dir_Length(XMFLOAT3 fDir, float fLength);*/
+
+	void Turn(XMVECTOR vAxis, float fTimeDelta);
+	void Rotation(XMVECTOR vAxis, float fRadian);
+
+	/*void Look_At(_fvector vTargetPoint);
+	void Chase_Target(_fvector vTargetPoint, _float fTimeDelta, _float fMargin = 0.1f);*/
+
+public:
 	HRESULT Initialize_Prototype() override;
 	HRESULT Initialize(void* pArg) override;
 

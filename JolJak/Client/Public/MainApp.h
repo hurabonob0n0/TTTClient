@@ -5,6 +5,7 @@
 BEGIN(Engine)
 class CGameInstance;
 class CTimer;
+//class CInput_Device;
 class CRawInput_Device;
 END
 
@@ -24,6 +25,11 @@ public:
 	LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	HRESULT Initialize_MainWindow(HINSTANCE g_hInstance);
 	HRESULT Initialize(HINSTANCE g_hInstance);
+
+	void Prepare_Textures();
+	void Prepare_Materials();
+	void Prepare_Components();
+	void Make_Objects();
 
 public:
 	void Update(const CTimer* Timer);
@@ -53,7 +59,8 @@ private:
 
 private:
 	CGameInstance*		m_pGameInstance = { nullptr };
-	CRawInput_Device*	m_pInput_Dev{ nullptr };
+	//CInput_Device*		m_pInput_Dev{ nullptr };
+	CRawInput_Device* m_pInput_Dev{ nullptr };
 	CTimer*				m_pTimer = { nullptr };
 
 public:

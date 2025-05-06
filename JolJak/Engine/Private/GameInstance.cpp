@@ -39,50 +39,41 @@ HRESULT CGameInstance::Initialize_Engine(HWND windowHandle, CRawInput_Device* In
 	m_ComMgr = CComponentMgr::Get_Instance();
 	if (nullptr == m_pGraphic_Device)
 		return E_FAIL;
-	m_ComMgr->AddPrototype("TransformCom", CTransform::Create());
+	/*m_ComMgr->AddPrototype("TransformCom", CTransform::Create());
 	m_ComMgr->AddPrototype("BaseGeoCom", CVIBuffer_Geos::Create(Get_Device(), Get_CommandList()));
+	m_ComMgr->AddPrototype("TerrainCom", CVIBuffer_Terrain::Create(Get_Device(), Get_CommandList(), "../Bin/Models/HeightMap/Height.png", 0.1f, 1.f));*/
 
-	////----------------------------Renderer
-	m_MainRenderer = CRenderer::Create(m_pGraphic_Device->Get_Device(), m_pGraphic_Device->Get_CommandList());
-	m_ComMgr->AddPrototype("RendererCom", m_MainRenderer);
-	Safe_AddRef(m_MainRenderer);
 
 	//-------------------------Root Signature---------------------------
-
-	m_RootSignature = CRootSignature::Create(m_pGraphic_Device->Get_Device());
-	if (nullptr == m_RootSignature)
-		return E_FAIL;
+	Build_RootSignatures();
 
 	
 	//------------------------ShaderMgr-------------------------------------------
-
-	m_ShaderMgr = CShader_Mgr::Get_Instance();
-	if (nullptr == m_ShaderMgr)
-		return E_FAIL;
-
-	m_ShaderMgr->AddShader("VS", CShader::ST_VS, L"../Bin/ShaderFiles/color.hlsl", nullptr);
-	m_ShaderMgr->AddShader("PS", CShader::ST_PS, L"../Bin/ShaderFiles/color.hlsl", nullptr);
+	Build_Shaders();
+	
 
 	//---------------------PSOMgr---------------------------------------------------
+	Build_PSOs();
 
-	m_PSOMgr = CPSOMgr::Get_Instance();
-	m_PSOMgr->AddPSO("PSO", m_RootSignature, m_ShaderMgr->GetShaderObj("VS"), m_ShaderMgr->GetShaderObj("PS"), m_pGraphic_Device, m_pGraphic_Device->Get_Device());
 
 	//---------------------FrameResourceMgr-------------------------------------------------
+	Build_FrameResources();
 
-	m_FrameResourceMgr = CFrameResourceMgr::Get_Instance();
-	m_FrameResourceMgr->Initialize(Get_Device(), gNumFrameResources);
-
+	////----------------------------Renderer
+	Create_Renderer();
 
 	//-------------------------------------ObjMgr-------------------------------------
 
 	m_ObjMgr = CObjectMgr::Get_Instance();
 
-	m_ObjMgr->AddObject("Camera", CCamera::Create());
-	//m_ObjMgr->AddObject("BaseObj", CBoxObj::Create());
-
-
 	//--------------------------------------------------------------------------------------
+
+	m_TextureMgr = CTextureMgr::Get_Instance();
+
+	//---------------------------------------------------------------
+
+	m_MaterialMgr = CMaterialMgr::Get_Instance();
+
 
 #pragma endregion
 
@@ -172,9 +163,9 @@ SIZE_T CGameInstance::GetBufferSize(const string& shaderName) const
 
 //-------------------------For PSOMgr----------------------------------------------------------
 
-HRESULT CGameInstance::AddPSO(const string& PSOName, CRootSignature* pRootSignature, CShader* VS, CShader* PS, CGraphic_Device* pGD, ID3D12Device* pDevice)
+HRESULT CGameInstance::AddPSO(const string& PSOName, ID3D12RootSignature* pRootSignature, CShader* VS, CShader* PS, CGraphic_Device* pGD, ID3D12Device* pDevice, CPSO::INPUTLAYOUT_TYPE eLayout)
 {
-	return m_PSOMgr->AddPSO(PSOName,pRootSignature,VS,PS,pGD,pDevice);
+	return m_PSOMgr->AddPSO(PSOName,pRootSignature,VS,PS,pGD,pDevice,eLayout);
 }
 
 CPSO* CGameInstance::GetPSOObj(const string& PSOName) const
@@ -187,12 +178,113 @@ ID3D12PipelineState* CGameInstance::Get_PSO(const string& PSOName) const
 	return m_PSOMgr->Get(PSOName);
 }
 
-
+//----------------For ObjMgr----------------------------------------------------
 
 HRESULT CGameInstance::AddObject(const string& layerTag, CGameObject* pGameObject)
 {
 	return m_ObjMgr->AddObject(layerTag,pGameObject);
 }
+
+//-------------------------For InputDev-----------------------------------------
+
+bool CGameInstance::Key_Down(UINT vkey)
+{
+	return m_Input_Dev->Key_Down(vkey);
+}
+
+bool CGameInstance::Key_Up(UINT vkey)
+{
+	return m_Input_Dev->Key_Up(vkey);
+}
+
+bool CGameInstance::Key_Pressing(UINT vkey)
+{
+	return m_Input_Dev->Key_Pressing(vkey);
+}
+
+bool CGameInstance::Mouse_Down(MOUSEKEYSTATE button)
+{
+	return m_Input_Dev->Mouse_Down(button);
+}
+
+bool CGameInstance::Mouse_Up(MOUSEKEYSTATE button)
+{
+	return m_Input_Dev->Mouse_Up(button);
+}
+
+bool CGameInstance::Mouse_Pressing(MOUSEKEYSTATE button)
+{
+	return m_Input_Dev->Mouse_Pressing(button);
+}
+
+
+//----------------------------------Builds---------------------------------------------
+
+
+
+
+void CGameInstance::Build_RootSignatures()
+{
+	m_RootSignatureMgr = CRootSignatureMgr::Get_Instance();
+
+	CRootSignatureBuilder builder1;
+	builder1
+		.Push(RootParam::ObjectCB, D3D12_ROOT_PARAMETER_TYPE_CBV, 0, 0, D3D12_SHADER_VISIBILITY_ALL) // slot 0
+		.Push(RootParam::PassCB, D3D12_ROOT_PARAMETER_TYPE_CBV, 1, 0, D3D12_SHADER_VISIBILITY_ALL); // slot 1
+		//.Push(RootParam::MaterialBuffer, D3D12_ROOT_PARAMETER_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL) // slot 2
+		//.PushTable(RootParam::Textures, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // slot 3
+
+	m_RootSignatureMgr->Register("DefaultRS", Get_Device(), builder1);
+
+	//m_RootSignatureMgr = CRootSignatureMgr::Get_Instance();
+
+	//CRootSignatureBuilder builder1;
+	//builder1
+	//	.Push(RootParam::ObjectCB, D3D12_ROOT_PARAMETER_TYPE_CBV, 0, 0, D3D12_SHADER_VISIBILITY_ALL) // slot 0
+	//	.Push(RootParam::PassCB, D3D12_ROOT_PARAMETER_TYPE_CBV, 1, 0, D3D12_SHADER_VISIBILITY_ALL) // slot 1
+	//	.Push(RootParam::MaterialBuffer, D3D12_ROOT_PARAMETER_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL) // slot 2
+	//	.PushTable(RootParam::Textures, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // slot 3
+
+	//m_RootSignatureMgr->Register("DefaultRS", Get_Device(), builder1);
+
+
+}
+
+void CGameInstance::Build_Shaders()
+{
+	m_ShaderMgr = CShader_Mgr::Get_Instance();
+
+	m_ShaderMgr->AddShader("DefaultVS", CShader::ST_VS, L"../Bin/Shader/Default.hlsl", nullptr);
+	m_ShaderMgr->AddShader("DefaultPS", CShader::ST_PS, L"../Bin/Shader/Default.hlsl", nullptr);
+
+	//m_ShaderMgr->AddShader("TerrainVS", CShader::ST_VS, L"../Bin/Shaders/Terrain.hlsl", nullptr);
+	//m_ShaderMgr->AddShader("TerrainPS", CShader::ST_PS, L"../Bin/Shaders/Terrain.hlsl", nullptr);
+}
+
+void CGameInstance::Build_PSOs()
+{
+	m_PSOMgr = CPSOMgr::Get_Instance();
+	m_PSOMgr->AddPSO("DefaultPSO", m_RootSignatureMgr->Get("DefaultRS"), 
+		m_ShaderMgr->GetShaderObj("DefaultVS"), m_ShaderMgr->GetShaderObj("DefaultPS"),
+		m_pGraphic_Device, Get_Device(), CPSO::IT_POS_NOR);
+
+	//m_PSOMgr->AddPSO("TerrainPSO", m_RootSignatureMgr->Get("TerrainRS"),
+	//	m_ShaderMgr->GetShaderObj("TerrainVS"), m_ShaderMgr->GetShaderObj("TerrainPS"),
+	//	m_pGraphic_Device, Get_Device(), CPSO::IT_POS_TEX);
+}
+
+void CGameInstance::Build_FrameResources()
+{
+	m_FrameResourceMgr = CFrameResourceMgr::Get_Instance();
+	m_FrameResourceMgr->Initialize(Get_Device(), gNumFrameResources);
+}
+
+void CGameInstance::Create_Renderer()
+{
+	m_MainRenderer = CRenderer::Create(Get_Device(),Get_CommandList() );
+	m_ComMgr->AddPrototype("RendererCom", m_MainRenderer);
+}
+
 
 //HRESULT CGameInstance::RemoveObject(const string& layerTag, CGameObject* pGameObject)
 //{
@@ -201,6 +293,8 @@ HRESULT CGameInstance::AddObject(const string& layerTag, CGameObject* pGameObjec
 
 void CGameInstance::Update(const CTimer* gameTimer)
 {
+	//m_Input_Dev->Update_InputDev();
+
 	AdvanceFrame();
 	auto CurrFrameResource = GetCurrentFrameResource();
 
@@ -232,15 +326,17 @@ void CGameInstance::Draw()
 	// We can only reset when the associated command lists have finished execution on the GPU.
 	ThrowIfFailed(cmdListAlloc->Reset());
 
-	ThrowIfFailed(m_pGraphic_Device->Get_CommandList()->Reset(cmdListAlloc, Get_PSO("PSO")));
+	ThrowIfFailed(m_pGraphic_Device->Get_CommandList()->Reset(cmdListAlloc, Get_PSO("DefaultPSO")));
 
 	Draw_1();
 
-	m_pGraphic_Device->Get_CommandList()->SetGraphicsRootSignature(m_RootSignature->Get());
+	m_pGraphic_Device->Get_CommandList()->SetGraphicsRootSignature(m_RootSignatureMgr->Get("DefaultRS"));
 
 	// Bind per-pass constant buffer.  We only need to do this once per-pass.
 	auto passCB = GetCurrentFrameResource()->m_PassCB->Resource();
 	m_pGraphic_Device->Get_CommandList()->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+
+
 
 	m_MainRenderer->Render();
 
@@ -264,10 +360,23 @@ void CGameInstance::OnResize()
 	m_pGraphic_Device->OnResize();
 }
 
-
-
 void CGameInstance::Free()
 {
+	//m_pGraphic_Device->FlushCommandQueue();
+
+	m_pGraphic_Device->Get_CommandQueue()->Wait(Get_Fence(), m_FrameResourceMgr->Get_Final_Fence());
+
+	UINT64 a = m_pGraphic_Device->Get_Fence_Value();
+	UINT64 b = m_FrameResourceMgr->Get_Final_Fence();
+
+	Safe_Release(m_Input_Dev);
+	Safe_Release(m_RootSignatureMgr);
+	Safe_Release(m_ShaderMgr);
+	Safe_Release(m_PSOMgr);
+	Safe_Release(m_FrameResourceMgr);
+	Safe_Release(m_MainRenderer);
+	Safe_Release(m_ObjMgr);
+	Safe_Release(m_ComMgr);
 	Safe_Release(m_pGraphic_Device);
 }
 

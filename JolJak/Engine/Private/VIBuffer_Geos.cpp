@@ -159,6 +159,9 @@ HRESULT CVIBuffer_Geos::Initialize_Prototype()
 	m_RenderedSubMeshName = BASIC_SUBMESHES::BS_BOX;
 	m_RenderedSubMesh = m_SubMeshInfos[m_RenderedSubMeshName];
 
+	m_IndexNum = m_SubMeshInfos[m_RenderedSubMeshName].IndexCount;
+
+
     return S_OK;
 
 	//1. ¿œ¥‹ 

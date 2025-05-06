@@ -1,332 +1,80 @@
 #include "Camera.h"
 #include "GameInstance.h"
 
-using namespace DirectX;
-
-CCamera::CCamera()
-{
-	SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
-}
-
-CCamera::~CCamera()
+CCamera::CCamera() : CGameObject()
 {
 }
 
-XMVECTOR CCamera::GetPosition()const
+HRESULT CCamera::Initialize()
 {
-	return XMLoadFloat3(&mPosition);
+	__super::Initialize();
+
+	m_TransformCom->Set_State(CTransform::STATE_POSITION, { 0.f,0.f,-10.f,1.f });
+
+	return S_OK;
 }
-
-XMFLOAT3 CCamera::GetPosition3f()const
-{
-	return mPosition;
-}
-
-void CCamera::SetPosition(float x, float y, float z)
-{
-	mPosition = XMFLOAT3(x, y, z);
-	mViewDirty = true;
-}
-
-void CCamera::SetPosition(const XMFLOAT3& v)
-{
-	mPosition = v;
-	mViewDirty = true;
-}
-
-XMVECTOR CCamera::GetRight()const
-{
-	return XMLoadFloat3(&mRight);
-}
-
-XMFLOAT3 CCamera::GetRight3f()const
-{
-	return mRight;
-}
-
-XMVECTOR CCamera::GetUp()const
-{
-	return XMLoadFloat3(&mUp);
-}
-
-XMFLOAT3 CCamera::GetUp3f()const
-{
-	return mUp;
-}
-
-XMVECTOR CCamera::GetLook()const
-{
-	return XMLoadFloat3(&mLook);
-}
-
-XMFLOAT3 CCamera::GetLook3f()const
-{
-	return mLook;
-}
-
-float CCamera::GetNearZ()const
-{
-	return mNearZ;
-}
-
-float CCamera::GetFarZ()const
-{
-	return mFarZ;
-}
-
-float CCamera::GetAspect()const
-{
-	return mAspect;
-}
-
-float CCamera::GetFovY()const
-{
-	return mFovY;
-}
-
-float CCamera::GetFovX()const
-{
-	float halfWidth = 0.5f * GetNearWindowWidth();
-	return 2.0f * atan(halfWidth / mNearZ);
-}
-
-float CCamera::GetNearWindowWidth()const
-{
-	return mAspect * mNearWindowHeight;
-}
-
-float CCamera::GetNearWindowHeight()const
-{
-	return mNearWindowHeight;
-}
-
-float CCamera::GetFarWindowWidth()const
-{
-	return mAspect * mFarWindowHeight;
-}
-
-float CCamera::GetFarWindowHeight()const
-{
-	return mFarWindowHeight;
-}
-
-void CCamera::SetLens(float fovY, float aspect, float zn, float zf)
-{
-	// cache properties
-	mFovY = fovY;
-	mAspect = aspect;
-	mNearZ = zn;
-	mFarZ = zf;
-
-	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
-	mFarWindowHeight = 2.0f * mFarZ * tanf(0.5f * mFovY);
-
-	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
-	XMStoreFloat4x4(&mProj, P);
-}
-
-void CCamera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
-{
-	XMVECTOR L = XMVector3Normalize(XMVectorSubtract(target, pos));
-	XMVECTOR R = XMVector3Normalize(XMVector3Cross(worldUp, L));
-	XMVECTOR U = XMVector3Cross(L, R);
-
-	XMStoreFloat3(&mPosition, pos);
-	XMStoreFloat3(&mLook, L);
-	XMStoreFloat3(&mRight, R);
-	XMStoreFloat3(&mUp, U);
-
-	mViewDirty = true;
-}
-
-void CCamera::LookAt(const XMFLOAT3& pos, const XMFLOAT3& target, const XMFLOAT3& up)
-{
-	XMVECTOR P = XMLoadFloat3(&pos);
-	XMVECTOR T = XMLoadFloat3(&target);
-	XMVECTOR U = XMLoadFloat3(&up);
-
-	LookAt(P, T, U);
-
-	mViewDirty = true;
-}
-
-XMMATRIX CCamera::GetView()const
-{
-	assert(!mViewDirty);
-	return XMLoadFloat4x4(&mView);
-}
-
-XMMATRIX CCamera::GetProj()const
-{
-	return XMLoadFloat4x4(&mProj);
-}
-
-
-XMFLOAT4X4 CCamera::GetView4x4f()const
-{
-	assert(!mViewDirty);
-	return mView;
-}
-
-XMFLOAT4X4 CCamera::GetProj4x4f()const
-{
-	return mProj;
-}
-
-void CCamera::Strafe(float d)
-{
-	// mPosition += d*mRight
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR r = XMLoadFloat3(&mRight);
-	XMVECTOR p = XMLoadFloat3(&mPosition);
-	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, r, p));
-
-	mViewDirty = true;
-}
-
-void CCamera::Walk(float d)
-{
-	// mPosition += d*mLook
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR l = XMLoadFloat3(&mLook);
-	XMVECTOR p = XMLoadFloat3(&mPosition);
-	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
-
-	mViewDirty = true;
-}
-
-void CCamera::Pitch(float angle)
-{
-	// Rotate up and look vector about the right vector.
-
-	XMMATRIX R = XMMatrixRotationAxis(XMLoadFloat3(&mRight), angle);
-
-	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
-	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
-
-	mViewDirty = true;
-}
-
-void CCamera::RotateY(float angle)
-{
-	// Rotate the basis vectors about the world y-axis.
-
-	XMMATRIX R = XMMatrixRotationY(angle);
-
-	XMStoreFloat3(&mRight, XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
-	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
-	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
-
-	mViewDirty = true;
-}
-
-void CCamera::UpdateViewMatrix()
-{
-	if (mViewDirty)
-	{
-		XMVECTOR R = XMLoadFloat3(&mRight);
-		XMVECTOR U = XMLoadFloat3(&mUp);
-		XMVECTOR L = XMLoadFloat3(&mLook);
-		XMVECTOR P = XMLoadFloat3(&mPosition);
-
-		// Keep camera's axes orthogonal to each other and of unit length.
-		L = XMVector3Normalize(L);
-		U = XMVector3Normalize(XMVector3Cross(L, R));
-
-		// U, L already ortho-normal, so no need to normalize cross product.
-		R = XMVector3Cross(U, L);
-
-		// Fill in the view matrix entries.
-		float x = -XMVectorGetX(XMVector3Dot(P, R));
-		float y = -XMVectorGetX(XMVector3Dot(P, U));
-		float z = -XMVectorGetX(XMVector3Dot(P, L));
-
-		XMStoreFloat3(&mRight, R);
-		XMStoreFloat3(&mUp, U);
-		XMStoreFloat3(&mLook, L);
-
-		mView(0, 0) = mRight.x;
-		mView(1, 0) = mRight.y;
-		mView(2, 0) = mRight.z;
-		mView(3, 0) = x;
-
-		mView(0, 1) = mUp.x;
-		mView(1, 1) = mUp.y;
-		mView(2, 1) = mUp.z;
-		mView(3, 1) = y;
-
-		mView(0, 2) = mLook.x;
-		mView(1, 2) = mLook.y;
-		mView(2, 2) = mLook.z;
-		mView(3, 2) = z;
-
-		mView(0, 3) = 0.0f;
-		mView(1, 3) = 0.0f;
-		mView(2, 3) = 0.0f;
-		mView(3, 3) = 1.0f;
-
-		mViewDirty = false;
-	}
-}
-
-
-
 
 void CCamera::Tick(float fTimeDelta)
 {
-	if (GetAsyncKeyState('W') & 0x8000)
-		Walk(10.0f * fTimeDelta);
+	if (m_GameInstance->Key_Pressing('W'))
+		m_TransformCom->Go_Straight(fTimeDelta * 100.f);
 
-	if (GetAsyncKeyState('S') & 0x8000)
-		Walk(-10.0f * fTimeDelta);
+	if (m_GameInstance->Key_Pressing('S'))
+		m_TransformCom->Go_Backward(fTimeDelta * 100.f);
 
-	if (GetAsyncKeyState('A') & 0x8000)
-		Strafe(-10.0f * fTimeDelta);
+	if (m_GameInstance->Key_Pressing('A'))
+		m_TransformCom->Go_Left(fTimeDelta * 100.f);
 
-	if (GetAsyncKeyState('D') & 0x8000)
-		Strafe(10.0f * fTimeDelta);
+	if (m_GameInstance->Key_Pressing('D'))
+		m_TransformCom->Go_Right(fTimeDelta * 100.f);
 
-	UpdateViewMatrix();
+	m_TransformCom->Turn({0.f,1.f,0.f,0.f}, fTimeDelta * (float)m_GameInstance->Get_Mouse_XDelta() * 0.5f);
+
+	m_TransformCom->Turn(m_TransformCom->Get_State(CTransform::STATE_RIGHT), fTimeDelta * (float)m_GameInstance->Get_Mouse_YDelta() * 0.5f);
+
 }
 
 void CCamera::LateTick(float fTimeDelta)
 {
-	XMMATRIX view = GetView();
-	XMMATRIX proj = GetProj();
+	XMMATRIX proj = XMMatrixPerspectiveFovLH(
+		XMConvertToRadians(60.0f), // Field of View (radian ´ÜÀ§)
+		2560.f/1440.f,               // Aspect ratio = width / height
+		1.f,                     // Near clipping plane
+		1000.f                       // Far clipping plane
+	);
+
+	PassConstants pc{};
+
+	XMMATRIX view = m_TransformCom->Get_WorldMatrix_Inverse();//XMLoadFloat4x4(&mView);
+	//XMMATRIX view = m_TransformCom->Get_WorldMatrix();
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
 	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
 	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
 
-	PassConstants mMainPassCB;
-
-	XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
-	XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
-	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
-	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
-	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
-	mMainPassCB.EyePosW = XMFLOAT3{};
-	mMainPassCB.RenderTargetSize = XMFLOAT2(2560.f, 1440.f);
-	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / 2560.f, 1.0f / 1440.f);
-	mMainPassCB.NearZ = 1.0f;
-	mMainPassCB.FarZ = 1000.0f;
-	mMainPassCB.TotalTime = 1.f;
-	mMainPassCB.DeltaTime = 1.f;
+	XMStoreFloat4x4(&pc.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&pc.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&pc.Proj, XMMatrixTranspose(proj));
+	pc.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+	pc.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
+	pc.Lights[0].Strength = { 0.6f, 0.6f, 0.6f };
+	pc.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	pc.Lights[1].Strength = { 0.3f, 0.3f, 0.3f };
+	pc.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
+	pc.Lights[2].Strength = { 0.15f, 0.15f, 0.15f };
 
 	auto currPassCB = m_GameInstance->GetCurrentFrameResource()->m_PassCB;
-	currPassCB->CopyData(0, mMainPassCB);
+	currPassCB->CopyData(0, pc);
 }
 
 CCamera* CCamera::Create()
 {
-	CCamera* pInstance = new CCamera;
-	pInstance->Initialize();
-	return pInstance;
+	CCamera* pCamera = new CCamera;
+	pCamera->Initialize();
+	return pCamera;
 }
 
 void CCamera::Free()
 {
-	__super::Free();
 }

@@ -22,6 +22,7 @@ protected:
 
 protected:
 	unordered_map<wstring, class CComponent*> m_Components;
+	CComponent* Get_Object_Component(wstring ComName) { m_Components };
 
 public:
 	void Free() override;

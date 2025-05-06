@@ -1,6 +1,8 @@
 #pragma once
 #include <crtdbg.h>
 #include <Windows.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include "dinput.h"
 
 namespace Client {
 	const static unsigned int		g_iWinSizeX = 1600;
@@ -8,3 +10,5 @@ namespace Client {
 };
 using namespace Client;
 using namespace std;
+
+static int PlayerID = 0;

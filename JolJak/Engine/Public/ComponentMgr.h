@@ -2,8 +2,12 @@
 #include "Base.h"
 #include "Component.h"
 #include "VIBuffer_Geos.h"
+#include "VIBuffer_Terrain.h"
 #include "Transform.h"
 #include "Renderer.h"
+#include "Model.h"
+#include "Mesh.h"
+#include "Bone.h"
 
 class CComponentMgr : public CBase
 {
@@ -30,6 +34,15 @@ public:
         auto iter = m_Prototypes.find(prototypeTag);
         if (iter != m_Prototypes.end())
             return iter->second->Clone(pArg); // 복사본 반환
+
+        return nullptr;
+    }
+
+    CComponent* GetPrototype(const string& prototypeTag) const
+    {
+        auto iter = m_Prototypes.find(prototypeTag);
+        if (iter != m_Prototypes.end())
+            return iter->second; // 
 
         return nullptr;
     }

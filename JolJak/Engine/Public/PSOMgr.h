@@ -4,7 +4,7 @@
 
 BEGIN(Engine)
 
-class CPSOMgr: public CBase
+class CPSOMgr : public CBase
 {
 	DECLARE_SINGLETON(CPSOMgr)
 
@@ -13,15 +13,14 @@ public:
 	virtual ~CPSOMgr() = default;
 
 public:
-	// PSO 추가
-	HRESULT AddPSO(const string& PSOName, CRootSignature* pRootSignature, CShader* VS, CShader* PS, CGraphic_Device* pGD, ID3D12Device* pDevice);
+	// PSO 추가 (InputLayout 타입 추가!)
+	HRESULT AddPSO(const string& PSOName, ID3D12RootSignature* pRootSignature, CShader* VS, CShader* PS, CGraphic_Device* pGD, ID3D12Device* pDevice, CPSO::INPUTLAYOUT_TYPE eLayout);
 
 	// PSO 정보 얻기
 	CPSO* GetPSOObj(const string& PSOName) const;
 
 	// PSO 버퍼 정보
 	ID3D12PipelineState* Get(const string& PSOName) const;
-	//SIZE_T GetBufferSize(const string& shaderName) const;
 
 private:
 	unordered_map<string, CPSO*> m_PSOs;

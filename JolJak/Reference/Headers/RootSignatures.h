@@ -3,29 +3,41 @@
 
 BEGIN(Engine)
 
-class CRootSignature : public CBase
+enum class RootParam {
+    ObjectCB,
+    PassCB,
+    MaterialBuffer,
+    SkyCubeMap,
+    Textures
+};
+
+class CRootSignatureBuilder : public CBase
 {
 public:
-	CRootSignature(ID3D12Device* pDevice);
-	virtual ~CRootSignature() = default;
+    //enum RootParam{RP_CBV,RP_SRV,RP_SRVTABLE,RP_END};
 
 public:
-	ID3D12RootSignature* Get() const { return m_RootSignature; }
+    CRootSignatureBuilder& Push(RootParam param, D3D12_ROOT_PARAMETER_TYPE paramType,
+        UINT shaderRegister, UINT registerSpace,
+        D3D12_SHADER_VISIBILITY visibility,
+        UINT num32BitValues = 0);
+
+    CRootSignatureBuilder& PushTable(RootParam param, D3D12_DESCRIPTOR_RANGE_TYPE rangeType,
+        UINT shaderRegister, UINT registerSpace, UINT numDescriptors,
+        D3D12_SHADER_VISIBILITY visibility);
+
+    ID3D12RootSignature* Build(ID3D12Device* device,
+        D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+    UINT GetRootParamIndex(RootParam param) const;
 
 private:
-	/*void Push(D3D12_ROOT_PARAMETER param, D3D12_ROOT_PARAMETER_TYPE paramType, UINT shaderRegister, UINT registerSpace, D3D12_SHADER_VISIBILITY visibility, UINT num32BitValues = 0);
-	void PushTable(D3D12_ROOT_PARAMETER param, D3D12_DESCRIPTOR_RANGE_TYPE rangeType, UINT shaderRegister, UINT registerSpace, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility);*/
-		
-private:
-	//std::vector<D3D12_ROOT_PARAMETER>	mParams{};		// all root parameters
-	//std::vector<D3D12_DESCRIPTOR_RANGE> mRanges{};		// all root ranges
-
-private:
-	ID3D12RootSignature* m_RootSignature = {};
+    std::vector<D3D12_ROOT_PARAMETER> mParams;
+    std::vector<D3D12_DESCRIPTOR_RANGE> mRanges;
+    std::unordered_map<RootParam, UINT> mParamMap;
 
 public:
-	static CRootSignature* Create(ID3D12Device* pDevice);
-	void Free() override;
+    void Free();
 };
 
 END

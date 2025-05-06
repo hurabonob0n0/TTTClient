@@ -17,6 +17,8 @@ HRESULT CRenderObject::Initialize()
     __super::Initialize(); 
     m_RendererCom = (CRenderer*)m_GameInstance->GetComponent("RendererCom", nullptr);
 
+	m_TexCoordTransformCom = (CTransform*)m_GameInstance->GetComponent("TransformCom", nullptr);
+
     return S_OK;
 }
 
@@ -35,7 +37,6 @@ void CRenderObject::LateTick(float fTimeDelta)
 
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
-	objConstants.Color = XMFLOAT4{ 0.f,0.f,0.f,0.f };
 
 	currObjectCB->CopyData(m_objCBIndex, objConstants);
 }
@@ -52,11 +53,12 @@ void CRenderObject::Render()
 
 	m_GameInstance->Get_CommandList()->SetGraphicsRootConstantBufferView(0, objCBAddress);
 
-    m_VIBufferCom->Render();
+    //m_VIBufferCom->Render();
 }
 
 void CRenderObject::Free()
 {
-	Safe_Release(m_VIBufferCom);
+	//Safe_Release(m_VIBufferCom);
     Safe_Release(m_RendererCom);
+	Safe_Release(m_TexCoordTransformCom);
 }

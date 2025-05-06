@@ -47,6 +47,16 @@ public:
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_NumFrames;
     }   
 
+    UINT64 Get_Final_Fence() {
+        auto iter = *max_element(
+            m_FrameResources.begin(),
+            m_FrameResources.end(),
+            [](CFrameResource* a, CFrameResource* b) {
+                return a->m_Fence < b->m_Fence; // 주의: 내림차순이면 큰 값을 얻으려면 '<'
+            });
+        return iter->m_Fence;
+    }
+
 private:
     std::vector<CFrameResource*> m_FrameResources;
     UINT m_CurrentFrameIndex = 0;

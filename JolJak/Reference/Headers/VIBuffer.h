@@ -11,7 +11,10 @@ protected:
 	virtual ~CVIBuffer() = default;
 
 public:
-	virtual HRESULT Render() = 0;
+	void Create_Buffer(ID3D12Resource* GPU, ID3D12Resource* Uploader, const void* initData, UINT64 byteSize);
+
+public:
+	virtual HRESULT Render();
 
 public:
 	D3D12_VERTEX_BUFFER_VIEW	VertexBufferView()const;
@@ -22,9 +25,16 @@ protected:
 	void DisposeUploaders();
 
 protected:
-	ID3D12Resource*				m_VertexBufferGPU = nullptr;
-	ID3D12Resource*				m_IndexBufferGPU = nullptr;
+	ID3D12Resource*				m_VertexBufferGPU;
+	ID3D12Resource*				m_IndexBufferGPU;
 
+#ifndef _DEBUG
+	D3D12_GPU_VIRTUAL_ADDRESS	m_VertexBufferGPUaddress;
+	D3D12_GPU_VIRTUAL_ADDRESS	m_IndexBufferGPUaddress;
+
+#endif // !_DEBUG
+
+	
 protected:
 	ID3D12Resource*				m_VertexBufferUploader = nullptr;
 	ID3D12Resource*				m_IndexBufferUploader = nullptr;
@@ -43,8 +53,8 @@ protected:
 	D3D12_PRIMITIVE_TOPOLOGY	m_PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 public:
-	virtual HRESULT Initialize_Prototype() = 0;
-	virtual HRESULT Initialize(void* pArg) = 0;
+	virtual HRESULT Initialize_Prototype() { return S_OK; }
+	virtual HRESULT Initialize(void* pArg) { return S_OK; };
 
 public:
 	CComponent_DC* Clone(void* pArg) = 0;

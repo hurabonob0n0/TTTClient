@@ -1,6 +1,11 @@
 #pragma once
 #include "Base.h"
 
+#define KEY_NONE        0x00
+#define KEY_DOWN        0x01
+#define KEY_UP          0x02
+#define KEY_PRESSING    0x04
+
 BEGIN(Engine)
 
 class ENGINE_DLL CRawInput_Device : public CBase
@@ -26,6 +31,13 @@ public:
     bool Mouse_Down(UINT button);
     bool Mouse_Up(UINT button);
     bool Mouse_Pressing(UINT button);
+
+    void ResetPerFrame();
+
+    void UpdateKeyStates();
+
+    SHORT Get_Mouse_XDelta() { return m_MouseDelta[0]; }
+    SHORT Get_Mouse_YDelta() { return m_MouseDelta[1]; }
 
 private:
     BYTE m_KeyState[256] = {};              // 현재 키보드 상태

@@ -3,7 +3,6 @@
 #include "GameObject.h"
 #include "RenderObject.h"
 #include "Camera.h"
-#include "BoxObj.h"
 
 BEGIN(Engine)
 
