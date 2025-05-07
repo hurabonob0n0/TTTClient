@@ -1,3 +1,7 @@
+#include "pch.h"
+/*-----------------
+	For Client
+-----------------*/
 #include <windowsx.h>
 #include "MainApp.h"
 #include "GameInstance.h"
@@ -7,6 +11,20 @@
 #include "Terrain.h"
 #include "Input_Device.h"
 #include "Tank.h"
+
+/*-----------------
+	For Server
+-----------------*/
+#include "ThreadManager.h"
+//#include "Service.h"//이따 빠져야 함
+#include "Session.h"
+#include "BufferReader.h"
+#include "ClientPacketHandler.h"
+#include "ServiceManager.h"
+
+
+static int MYClientID;
+
 
 IMPLEMENT_SINGLETON(CMainApp)
 
@@ -286,9 +304,58 @@ HRESULT CMainApp::Initialize_MainWindow(HINSTANCE g_hInstance)
 	return true;
 }
 
+#pragma region For ServerSession Class (Work by Packet)
+class ServerSession : public PacketSession
+{
+public:
+	~ServerSession()
+	{
+	}
+
+	virtual void OnConnected() override
+	{
+		SendBufferRef sendBuffer = ClientPacketHandler::Make_C_LOGIN(1001, 100, 10);
+		Send(sendBuffer);
+	}
+
+	virtual void OnRecvPacket(BYTE* buffer, int32 len) override
+	{
+		ClientPacketHandler::HandlePacket(buffer, len);
+	}
+
+	virtual void OnSend(int32 len) override
+	{
+	}
+
+	virtual void OnDisconnected() override
+	{
+	}
+};
+#pragma endregion Dont Touch!
+
 HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 {
+
+#pragma region ServerInitConnect
+
+	ClientServiceRef service = MakeShared<ClientService>(
+		NetAddress(L"127.0.0.1", 7777),
+		MakeShared<IocpCore>(),
+		MakeShared<ServerSession>,
+		1);
+
+	ASSERT_CRASH(service->Start());
+
+	ServiceManager::GetInstace().SetService(service);
+
+
+#pragma endregion Dont Touch!
+
+
 #pragma region Base Initialize
+	
+
+	
 	Initialize_MainWindow(g_hInstance);
 
 	//m_pInput_Dev->Initialize(g_hInstance,m_hMainWnd);

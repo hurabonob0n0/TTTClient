@@ -11,4 +11,3 @@ namespace Client {
 using namespace Client;
 using namespace std;
 
-static int PlayerID = 0;
