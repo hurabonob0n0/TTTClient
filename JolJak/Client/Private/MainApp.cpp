@@ -338,15 +338,15 @@ HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 
 #pragma region ServerInitConnect
 
-	ClientServiceRef service = MakeShared<ClientService>(
-		NetAddress(L"127.0.0.1", 7777),
-		MakeShared<IocpCore>(),
-		MakeShared<ServerSession>,
-		1);
+	//ClientServiceRef service = MakeShared<ClientService>(
+	//	NetAddress(L"127.0.0.1", 7777),
+	//	MakeShared<IocpCore>(),
+	//	MakeShared<ServerSession>,
+	//	1);
 
-	ASSERT_CRASH(service->Start());
+	//ASSERT_CRASH(service->Start());
 
-	ServiceManager::GetInstace().SetService(service);
+	//ServiceManager::GetInstace().SetService(service);
 
 
 #pragma endregion Dont Touch!
@@ -374,13 +374,13 @@ HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 	m_pGameInstance->AddPrototype("TransformCom", CTransform::Create());
 	m_pGameInstance->AddPrototype("TerrainCom", CVIBuffer_Terrain::Create(m_pGameInstance->Get_Device(),m_pGameInstance->Get_CommandList(),"../Bin/Models/Terrain/Terrain.png",0.3f,1.f));
 	m_pGameInstance->AddPrototype("BaseGeosCom", CVIBuffer_Geos::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList()));
-	//m_pGameInstance->AddPrototype("TankModel", CModel::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList(), CModel::TYPE_NONANIM, "../bin/Models/Tank/M1A2.FBX"));
+	m_pGameInstance->AddPrototype("TankModel", CModel::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList(), CModel::TYPE_NONANIM, "../bin/Models/Tank/M1A2.FBX"));
 	
 	m_pGameInstance->AddObject("Camera", CCamera::Create());
 	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
 	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
 	m_pGameInstance->AddObject("Terrain", CTerrain::Create());
-	//m_pGameInstance->AddObject("Tank", CTank::Create());
+	m_pGameInstance->AddObject("Tank", CTank::Create());
 
 	m_pGameInstance->Get_CommandList()->Close();
 	ID3D12CommandList* cmdLists[] = { m_pGameInstance->Get_CommandList()};

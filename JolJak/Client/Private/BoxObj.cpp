@@ -45,8 +45,6 @@ void CBoxObj::Tick(float fTimeDelta)
   
 #pragma region MakeSendBuffer & Send Data
 
-   /* XMVECTOR temp = m_TransformCom->Get_State(CTransform::STATE_POSITION);
-   temp.m128_f32;*/
    SendBufferRef sendBuffer = ClientPacketHandler::Make_C_MOVE(Position.x, TerrainY, Position.z);
    ServiceManager::GetInstace().GetService()->Broadcast(sendBuffer);
 
