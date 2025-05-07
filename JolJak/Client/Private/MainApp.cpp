@@ -374,13 +374,13 @@ HRESULT CMainApp::Initialize(HINSTANCE g_hInstance)
 	m_pGameInstance->AddPrototype("TransformCom", CTransform::Create());
 	m_pGameInstance->AddPrototype("TerrainCom", CVIBuffer_Terrain::Create(m_pGameInstance->Get_Device(),m_pGameInstance->Get_CommandList(),"../Bin/Models/Terrain/Terrain.png",0.3f,1.f));
 	m_pGameInstance->AddPrototype("BaseGeosCom", CVIBuffer_Geos::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList()));
-	m_pGameInstance->AddPrototype("TankModel", CModel::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList(), CModel::TYPE_NONANIM, "../bin/Models/Tank/M1A2.FBX"));
+	//m_pGameInstance->AddPrototype("TankModel", CModel::Create(m_pGameInstance->Get_Device(), m_pGameInstance->Get_CommandList(), CModel::TYPE_NONANIM, "../bin/Models/Tank/M1A2.FBX"));
 	
 	m_pGameInstance->AddObject("Camera", CCamera::Create());
 	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
 	m_pGameInstance->AddObject("BoxObj", CBoxObj::Create());
 	m_pGameInstance->AddObject("Terrain", CTerrain::Create());
-	m_pGameInstance->AddObject("Tank", CTank::Create());
+//	m_pGameInstance->AddObject("Tank", CTank::Create());
 
 	m_pGameInstance->Get_CommandList()->Close();
 	ID3D12CommandList* cmdLists[] = { m_pGameInstance->Get_CommandList()};
