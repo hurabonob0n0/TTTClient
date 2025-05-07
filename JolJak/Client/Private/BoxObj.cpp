@@ -45,8 +45,8 @@ void CBoxObj::Tick(float fTimeDelta)
   
 #pragma region MakeSendBuffer & Send Data
 
-   SendBufferRef sendBuffer = ClientPacketHandler::Make_C_MOVE(Position.x, TerrainY, Position.z);
-   ServiceManager::GetInstace().GetService()->Broadcast(sendBuffer);
+   //SendBufferRef sendBuffer = ClientPacketHandler::Make_C_MOVE(Position.x, TerrainY, Position.z);
+   //ServiceManager::GetInstace().GetService()->Broadcast(sendBuffer);
 
 #pragma endregion TODO : 여기 좌표 수정 필요
 
